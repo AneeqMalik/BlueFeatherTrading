@@ -2,12 +2,14 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { ThemeToggle } from './ThemeToggle';
+import { useState } from 'react';
 
 export default function Header() {
   const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navLinks = [
     { name: 'Home', href: '/', exact: true },
@@ -20,7 +22,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b border-border">
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-        <Link className="flex items-center gap-3" href="/">
+        <Link className="flex items-center gap-3" href="/" onClick={() => setIsMobileMenuOpen(false)}>
           <Image 
             src="/images/logo-B4zLhN4D.jpeg" 
             alt="Blue Feather" 
@@ -58,12 +60,51 @@ export default function Header() {
           </nav>
           <div className="flex items-center gap-3">
             <ThemeToggle />
-            <button className="md:hidden p-2 text-foreground" aria-label="Menu">
-              <Menu className="size-6" />
+            <button 
+              className="md:hidden p-2 text-foreground" 
+              aria-label="Toggle Menu"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X className="size-6" /> : <Menu className="size-6" />}
             </button>
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden absolute top-20 left-0 w-full bg-background border-b border-border shadow-lg py-4 px-6 flex flex-col gap-4">
+          <nav className="flex flex-col gap-4">
+            {navLinks.map((link) => {
+              const isActive = link.exact 
+                ? pathname === link.href 
+                : pathname.startsWith(link.href);
+              
+              return (
+                <Link 
+                  key={link.name}
+                  href={link.href} 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`text-base font-medium py-2 transition-colors hover:text-accent ${
+                    isActive ? 'text-accent' : 'text-foreground'
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              );
+            })}
+            <div className="pt-2">
+              <Link 
+                href="/contact" 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="inline-flex w-full justify-center px-5 py-3 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-all shadow-md shadow-primary/10"
+              >
+                Inquire
+              </Link>
+            </div>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
