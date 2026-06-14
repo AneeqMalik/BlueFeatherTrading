@@ -14,38 +14,39 @@ export default function ContactPage() {
     setError(null);
 
     const formData = new FormData(event.currentTarget);
-    const data = {
-      firstName: formData.get('firstName'),
-      lastName: formData.get('lastName'),
-      email: formData.get('email'),
-      company: formData.get('company'),
-      inquiryType: formData.get('inquiryType'),
-      message: formData.get('message'),
-    };
 
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
 
-      const result = await response.json();
 
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to send message');
-      }
 
+      const firstName = String(formData.get('firstName') || '');
+      const lastName = String(formData.get('lastName') || '');
+      const email = String(formData.get('email') || '');
+      const company = String(formData.get('company') || '');
+      const inquiryType = String(formData.get('inquiryType') || '');
+      const message = String(formData.get('message') || '');
+
+      const subject = encodeURIComponent(`New Inquiry: ${inquiryType} from ${firstName} ${lastName}`);
+      const body = encodeURIComponent([
+        'New Contact Form Submission',
+        '',
+        `Name: ${firstName} ${lastName}`,
+        `Email: ${email}`,
+        `Company: ${company || 'N/A'}`,
+        `Inquiry Type: ${inquiryType}`,
+        '',
+        'Message:',
+        message,
+      ].join('\n'));
+
+      window.location.href = `mailto:info@bluefeathertrading.com?subject=${subject}&body=${body}`;
       setIsSuccess(true);
       (event.target as HTMLFormElement).reset();
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+      setError(err.message || 'Unable to open your email client.');
     } finally {
       setIsSubmitting(false);
       
-      // Reset success message after 5 seconds
       if (!error) {
         setTimeout(() => setIsSuccess(false), 5000);
       }
